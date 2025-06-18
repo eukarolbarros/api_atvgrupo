@@ -1,41 +1,26 @@
-from db import db
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
 import re
+from app.db import db
 
-class User(db.Model):
-    __tablename__ = 'user'
-
+class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     nome = db.Column(db.String(100), nullable=False)
-    senha = db.Column(db.String(100), nullable=False)
-
-    mensagens = db.relationship('Message', backref='usuario', lazy=True)
+    senha = db.Column(db.String(128), nullable=False)
 
     @validates('email')
     def validate_email(self, key, email):
-        padrao = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-        if not re.match(padrao, email):
+        if not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email):
             raise ValueError("Email inválido")
         return email
 
-    @validates('nome')
-    def validate_nome(self, key, nome):
-        if not nome or nome.strip() == '':
-            raise ValueError("Nome não pode ser vazio")
-        return nome
-
     @validates('senha')
-    def validate_senha(self, key, senha):
-        if len(senha) < 8:
-            raise ValueError("Senha deve ter pelo menos 8 caracteres")
-        if not re.search(r'[A-Z]', senha):
-            raise ValueError("Senha deve conter pelo menos uma letra maiúscula")
-        if not re.search(r'[a-z]', senha):
-            raise ValueError("Senha deve conter pelo menos uma letra minúscula")
-        if not re.search(r'\d', senha):
-            raise ValueError("Senha deve conter pelo menos um dígito")
-        if not re.search(r'[@!%*?]', senha):
-            raise ValueError("Senha deve conter pelo menos um caractere especial (@!%*?)")
+    def validate_password(self, key, senha):
+        if (len(senha) < 8 or
+            not re.search(r'[A-Z]', senha) or
+            not re.search(r'[a-z]', senha) or
+            not re.search(r'[0-9]', senha) or
+            not re.search(r'[@!%*?&]', senha)):
+            raise ValueError("Senha fraca")
         return senha
-

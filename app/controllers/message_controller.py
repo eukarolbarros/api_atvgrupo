@@ -1,11 +1,26 @@
-from flask import request, jsonify
-from models.message import Message
-from db import db
+from flask import Blueprint, request, jsonify
+from app.models.message import Mensagem
+from app import db
 
+mensagem_bp = Blueprint('mensagem', __name__)
+
+@mensagem_bp.route('', methods=['POST'])
 def criar_mensagem():
-    data = request.get_json()
-    # Força o usuário padrão com ID = 1
-    mensagem = Message(conteudo=data['conteudo'], usuario_id=1)
-    db.session.add(mensagem)
+    data = request.json
+    nova_msg = Mensagem(conteudo=data['conteudo'], autor_id=1)  # autor padrão
+    db.session.add(nova_msg)
     db.session.commit()
-    return jsonify({"mensagem": "Mensagem criada com sucesso!"}), 201
+    return jsonify({'id': nova_msg.id}), 201
+
+@mensagem_bp.route('/<int:id>', methods=['PUT'])
+def atualizar_mensagem(id):
+    msg = Mensagem.query.get_or_404(id)
+    data = request.json
+
+    if 'autor_id' in data and data['autor_id'] != msg.autor_id:
+        return jsonify({'erro': 'Autor não pode ser alterado'}), 400
+
+    msg.conteudo = data.get('conteudo', msg.conteudo)
+    db.session.commit()
+    return jsonify({'mensagem': 'Mensagem atualizada'})
+

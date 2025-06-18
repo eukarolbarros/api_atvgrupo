@@ -1,6 +1,9 @@
-from db import db
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+from app.db import db
 
-class Message(db.Model):
+class Mensagem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    conteudo = db.Column(db.String(500), nullable=False)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    conteudo = db.Column(db.Text, nullable=False)
+    data_hora = db.Column(db.DateTime, default=datetime.utcnow)
+    autor_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
