@@ -1,32 +1,22 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from app.controllers.user_controller import usuario_bp
-from app.controllers.message_controller import mensagem_bp
+from flask_migrate import Migrate
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///banco.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+app.config.from_object('config.Config')
 db = SQLAlchemy(app)
 
-from app.models.user import Usuario
-from app.models.message import Mensagem
+from models.user import Usuario
+from models.message import Mensagem
+migrate = Migrate(app, db)
+with app.app_context():
+    db.create_all()  
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object('config.Config')
+from routes.user_route import user_bp
+from routes.message_route import message_bp
 
-    db.init_app(app)
+app.register_blueprint(user_bp)
+app.register_blueprint(message_bp)
 
-    with app.app_context():
-        db.create_all()  
-
-    # Registrar blueprints
-    from app.controllers.user_controller import usuario_bp
-    from app.controllers.message_controller import mensagem_bp
-    app.register_blueprint(usuario_bp)
-    app.register_blueprint(mensagem_bp)
-
-    return app
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,7 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
 import re
-from app.db import db
+from app import db
 
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -9,7 +8,7 @@ class Usuario(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     senha = db.Column(db.String(128), nullable=False)
 
-    @validates('email')
+    @validates  ('email')
     def validate_email(self, key, email):
         if not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email):
             raise ValueError("Email inválido")
